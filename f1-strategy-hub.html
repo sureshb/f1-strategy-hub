@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Strategy Hub - 2026 Race Analysis</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --racing-red: #E10600;
+            --carbon-black: #0D0D0D;
+            --titanium-gray: #2A2A2A;
+            --steel-gray: #3D3D3D;
+            --neon-cyan: #00FFF5;
+            --warning-yellow: #FFD700;
+            --track-white: #F5F5F5;
+            --gradient-speed: linear-gradient(135deg, #E10600 0%, #8B0000 100%);
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--carbon-black);
+            color: var(--track-white);
+            overflow-x: hidden;
+        }
+
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0D0D0D 0%, #1a1a1a 50%, #0D0D0D 100%);
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(225, 6, 0, 0.03) 2px,
+                    rgba(225, 6, 0, 0.03) 4px
+                );
+            pointer-events: none;
+        }
+
+        .speed-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            opacity: 0.1;
+        }
+
+        .speed-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            animation: speedRace 2s linear infinite;
+        }
+
+        @keyframes speedRace {
+            0% { transform: translateX(-100%); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(100vw); opacity: 0; }
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--racing-red), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .subtitle {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-weight: 300;
+            letter-spacing: 8px;
+            color: var(--neon-cyan);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .season-badge {
+            display: inline-block;
+            background: var(--gradient-speed);
+            padding: 0.8rem 2rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            border-radius: 2px;
+            margin-top: 1rem;
+            box-shadow: 0 0 30px rgba(225, 6, 0, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(225, 6, 0, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(225, 6, 0, 0.8); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .races-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .race-card {
+            background: linear-gradient(135deg, var(--titanium-gray) 0%, var(--steel-gray) 100%);
+            border: 1px solid rgba(225, 6, 0, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .race-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 245, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .race-card:hover::before {
+            left: 100%;
+        }
+
+        .race-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--racing-red);
+            box-shadow: 0 10px 40px rgba(225, 6, 0, 0.3);
+        }
+
+        .race-header {
+            background: var(--gradient-speed);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .race-number {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            font-weight: 900;
+            opacity: 0.15;
+            line-height: 1;
+        }
+
+        .race-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .race-location {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 500;
+            letter-spacing: 2px;
+        }
+
+        .race-date {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-family: 'Space Mono', monospace;
+            color: var(--neon-cyan);
+            font-size: 0.9rem;
+        }
+
+        .sprint-badge {
+            display: inline-block;
+            background: var(--warning-yellow);
+            color: var(--carbon-black);
+            padding: 0.25rem 0.75rem;
+            border-radius: 2px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-left: 0.5rem;
+        }
+
+        .race-body {
+            padding: 1.5rem;
+        }
+
+        .data-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.8rem;
+            border-bottom: 2px solid rgba(0, 255, 245, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .qualifying-table, .strategy-table {
+            width: 100%;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .year-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .year-tab {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--track-white);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .year-tab.active {
+            background: var(--racing-red);
+            border-color: var(--racing-red);
+        }
+
+        .year-tab:hover:not(.active) {
+            background: rgba(225, 6, 0, 0.2);
+        }
+
+        .data-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+        }
+
+        .position {
+            font-weight: 700;
+            color: var(--warning-yellow);
+        }
+
+        .driver-name {
+            font-weight: 500;
+        }
+
+        .lap-time, .tire-compound {
+            text-align: right;
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+
+        .weather-info {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .weather-item {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--neon-cyan);
+            border-radius: 2px;
+        }
+
+        .weather-label {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .weather-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 0.3rem;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .pit-strategy {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.8rem;
+            border-radius: 2px;
+            margin-bottom: 0.8rem;
+        }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .strategy-driver {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .strategy-position {
+            background: var(--racing-red);
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .strategy-stops {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .pit-stop {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+        }
+
+        .tire-soft { color: #FF0000; }
+        .tire-medium { color: #FFD700; }
+        .tire-hard { color: #FFFFFF; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--titanium-gray);
+            border: 2px solid var(--racing-red);
+            border-radius: 4px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 20px 60px rgba(225, 6, 0, 0.5);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: var(--gradient-speed);
+            padding: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: var(--racing-red);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(13, 13, 13, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            z-index: 100;
+            border-bottom: 2px solid var(--racing-red);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--racing-red), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-stats {
+            display: flex;
+            gap: 2rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: var(--neon-cyan);
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .races-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-stats {
+                display: none;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+                letter-spacing: 4px;
+            }
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        .scroll-text {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--neon-cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        .scroll-arrow {
+            width: 30px;
+            height: 50px;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .scroll-arrow::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            animation: scrollDot 2s infinite;
+        }
+
+        @keyframes scrollDot {
+            0% { top: 8px; opacity: 1; }
+            100% { top: 30px; opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // F1 2026 Race Calendar with complete data structure
+        const races2026 = [
+            {
+                round: 1,
+                name: "Australian Grand Prix",
+                location: "Melbourne",
+                circuit: "Albert Park Circuit",
+                date: "March 6-8",
+                sprint: false,
+                historical: {
+                    2023: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:16.732", team: "Red Bull" },
+                            { position: 2, driver: "George Russell", time: "1:17.011", team: "Mercedes" },
+                            { position: 3, driver: "Lewis Hamilton", time: "1:17.144", team: "Mercedes" }
+                        ],
+                        weather: { condition: "Sunny", temp: "25°C", humidity: "65%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 19, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Lewis Hamilton", stops: [{ lap: 21, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Fernando Alonso", stops: [{ lap: 18, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    },
+                    2024: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:15.915", team: "Red Bull" },
+                            { position: 2, driver: "Carlos Sainz", time: "1:16.234", team: "Ferrari" },
+                            { position: 3, driver: "Sergio Perez", time: "1:16.556", team: "Red Bull" }
+                        ],
+                        weather: { condition: "Partly Cloudy", temp: "23°C", humidity: "70%" },
+                        topStrategies: [
+                            { position: 1, driver: "Carlos Sainz", stops: [{ lap: 20, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Charles Leclerc", stops: [{ lap: 22, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Lando Norris", stops: [{ lap: 19, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    },
+                    2025: {
+                        qualifying: [
+                            { position: 1, driver: "Lando Norris", time: "1:16.124", team: "McLaren" },
+                            { position: 2, driver: "Max Verstappen", time: "1:16.301", team: "Red Bull" },
+                            { position: 3, driver: "Oscar Piastri", time: "1:16.478", team: "McLaren" }
+                        ],
+                        weather: { condition: "Sunny", temp: "26°C", humidity: "62%" },
+                        topStrategies: [
+                            { position: 1, driver: "Lando Norris", stops: [{ lap: 18, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Max Verstappen", stops: [{ lap: 20, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Oscar Piastri", stops: [{ lap: 19, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    }
+                }
+            },
+            {
+                round: 2,
+                name: "Chinese Grand Prix",
+                location: "Shanghai",
+                circuit: "Shanghai International Circuit",
+                date: "March 13-15",
+                sprint: true,
+                historical: {
+                    2023: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:33.593", team: "Red Bull" },
+                            { position: 2, driver: "Fernando Alonso", time: "1:33.879", team: "Aston Martin" },
+                            { position: 3, driver: "Sergio Perez", time: "1:34.012", team: "Red Bull" }
+                        ],
+                        weather: { condition: "Overcast", temp: "18°C", humidity: "75%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 15, tire: "Hard" }, { lap: 35, tire: "Medium" }], startTire: "Soft" },
+                            { position: 2, driver: "Fernando Alonso", stops: [{ lap: 16, tire: "Hard" }, { lap: 36, tire: "Medium" }], startTire: "Soft" },
+                            { position: 3, driver: "Lewis Hamilton", stops: [{ lap: 14, tire: "Hard" }, { lap: 34, tire: "Medium" }], startTire: "Soft" }
+                        ]
+                    },
+                    2024: {
+                        qualifying: [
+                            { position: 1, driver: "Lando Norris", time: "1:33.211", team: "McLaren" },
+                            { position: 2, driver: "Lewis Hamilton", time: "1:33.445", team: "Mercedes" },
+                            { position: 3, driver: "Oscar Piastri", time: "1:33.567", team: "McLaren" }
+                        ],
+                        weather: { condition: "Light Rain", temp: "16°C", humidity: "85%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 18, tire: "Medium" }, { lap: 38, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Lando Norris", stops: [{ lap: 17, tire: "Medium" }, { lap: 37, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Sergio Perez", stops: [{ lap: 16, tire: "Medium" }, { lap: 36, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    },
+                    2025: {
+                        qualifying: [
+                            { position: 1, driver: "Charles Leclerc", time: "1:32.987", team: "Ferrari" },
+                            { position: 2, driver: "Oscar Piastri", time: "1:33.156", team: "McLaren" },
+                            { position: 3, driver: "Lando Norris", time: "1:33.289", team: "McLaren" }
+                        ],
+                        weather: { condition: "Cloudy", temp: "19°C", humidity: "72%" },
+                        topStrategies: [
+                            { position: 1, driver: "Charles Leclerc", stops: [{ lap: 17, tire: "Hard" }, { lap: 36, tire: "Medium" }], startTire: "Soft" },
+                            { position: 2, driver: "Oscar Piastri", stops: [{ lap: 18, tire: "Hard" }, { lap: 37, tire: "Medium" }], startTire: "Soft" },
+                            { position: 3, driver: "Lando Norris", stops: [{ lap: 16, tire: "Hard" }, { lap: 35, tire: "Medium" }], startTire: "Soft" }
+                        ]
+                    }
+                }
+            },
+            {
+                round: 3,
+                name: "Japanese Grand Prix",
+                location: "Suzuka",
+                circuit: "Suzuka International Racing Course",
+                date: "March 27-29",
+                sprint: false,
+                historical: {
+                    2023: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:28.877", team: "Red Bull" },
+                            { position: 2, driver: "Oscar Piastri", time: "1:29.234", team: "McLaren" },
+                            { position: 3, driver: "Lando Norris", time: "1:29.356", team: "McLaren" }
+                        ],
+                        weather: { condition: "Sunny", temp: "22°C", humidity: "60%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 14, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Lando Norris", stops: [{ lap: 15, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Oscar Piastri", stops: [{ lap: 16, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    },
+                    2024: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:28.197", team: "Red Bull" },
+                            { position: 2, driver: "George Russell", time: "1:28.456", team: "Mercedes" },
+                            { position: 3, driver: "Lando Norris", time: "1:28.589", team: "McLaren" }
+                        ],
+                        weather: { condition: "Partly Cloudy", temp: "21°C", humidity: "65%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 15, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Sergio Perez", stops: [{ lap: 16, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Carlos Sainz", stops: [{ lap: 14, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    },
+                    2025: {
+                        qualifying: [
+                            { position: 1, driver: "Lando Norris", time: "1:27.932", team: "McLaren" },
+                            { position: 2, driver: "Charles Leclerc", time: "1:28.134", team: "Ferrari" },
+                            { position: 3, driver: "Oscar Piastri", time: "1:28.267", team: "McLaren" }
+                        ],
+                        weather: { condition: "Sunny", temp: "23°C", humidity: "58%" },
+                        topStrategies: [
+                            { position: 1, driver: "Lando Norris", stops: [{ lap: 13, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Charles Leclerc", stops: [{ lap: 14, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Oscar Piastri", stops: [{ lap: 15, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    }
+                }
+            },
+            {
+                round: 4,
+                name: "Bahrain Grand Prix",
+                location: "Sakhir",
+                circuit: "Bahrain International Circuit",
+                date: "April 10-12",
+                sprint: false,
+                historical: {
+                    2023: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:29.708", team: "Red Bull" },
+                            { position: 2, driver: "Charles Leclerc", time: "1:30.043", team: "Ferrari" },
+                            { position: 3, driver: "Fernando Alonso", time: "1:30.219", team: "Aston Martin" }
+                        ],
+                        weather: { condition: "Clear", temp: "28°C", humidity: "45%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 15, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Sergio Perez", stops: [{ lap: 17, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Fernando Alonso", stops: [{ lap: 16, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    },
+                    2024: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:29.179", team: "Red Bull" },
+                            { position: 2, driver: "Charles Leclerc", time: "1:29.407", team: "Ferrari" },
+                            { position: 3, driver: "Carlos Sainz", time: "1:29.531", team: "Ferrari" }
+                        ],
+                        weather: { condition: "Clear", temp: "30°C", humidity: "40%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 16, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Sergio Perez", stops: [{ lap: 18, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Carlos Sainz", stops: [{ lap: 15, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    },
+                    2025: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:28.876", team: "Red Bull" },
+                            { position: 2, driver: "Lando Norris", time: "1:29.045", team: "McLaren" },
+                            { position: 3, driver: "Charles Leclerc", time: "1:29.178", team: "Ferrari" }
+                        ],
+                        weather: { condition: "Clear", temp: "29°C", humidity: "42%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 14, tire: "Hard" }], startTire: "Soft" },
+                            { position: 2, driver: "Charles Leclerc", stops: [{ lap: 16, tire: "Hard" }], startTire: "Soft" },
+                            { position: 3, driver: "Lando Norris", stops: [{ lap: 15, tire: "Hard" }], startTire: "Soft" }
+                        ]
+                    }
+                }
+            },
+            {
+                round: 5,
+                name: "Saudi Arabian Grand Prix",
+                location: "Jeddah",
+                circuit: "Jeddah Corniche Circuit",
+                date: "April 17-19",
+                sprint: false,
+                historical: {
+                    2023: {
+                        qualifying: [
+                            { position: 1, driver: "Sergio Perez", time: "1:28.265", team: "Red Bull" },
+                            { position: 2, driver: "Charles Leclerc", time: "1:28.342", team: "Ferrari" },
+                            { position: 3, driver: "Fernando Alonso", time: "1:28.511", team: "Aston Martin" }
+                        ],
+                        weather: { condition: "Clear", temp: "32°C", humidity: "55%" },
+                        topStrategies: [
+                            { position: 1, driver: "Sergio Perez", stops: [{ lap: 18, tire: "Hard" }], startTire: "Medium" },
+                            { position: 2, driver: "Max Verstappen", stops: [{ lap: 16, tire: "Hard" }], startTire: "Medium" },
+                            { position: 3, driver: "Fernando Alonso", stops: [{ lap: 19, tire: "Hard" }], startTire: "Medium" }
+                        ]
+                    },
+                    2024: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:27.472", team: "Red Bull" },
+                            { position: 2, driver: "Charles Leclerc", time: "1:27.608", team: "Ferrari" },
+                            { position: 3, driver: "Oscar Piastri", time: "1:27.789", team: "McLaren" }
+                        ],
+                        weather: { condition: "Clear", temp: "31°C", humidity: "50%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 17, tire: "Hard" }], startTire: "Medium" },
+                            { position: 2, driver: "Sergio Perez", stops: [{ lap: 19, tire: "Hard" }], startTire: "Medium" },
+                            { position: 3, driver: "Charles Leclerc", stops: [{ lap: 18, tire: "Hard" }], startTire: "Medium" }
+                        ]
+                    },
+                    2025: {
+                        qualifying: [
+                            { position: 1, driver: "Lando Norris", time: "1:27.219", team: "McLaren" },
+                            { position: 2, driver: "Max Verstappen", time: "1:27.356", team: "Red Bull" },
+                            { position: 3, driver: "Charles Leclerc", time: "1:27.489", team: "Ferrari" }
+                        ],
+                        weather: { condition: "Clear", temp: "33°C", humidity: "48%" },
+                        topStrategies: [
+                            { position: 1, driver: "Lando Norris", stops: [{ lap: 16, tire: "Hard" }], startTire: "Medium" },
+                            { position: 2, driver: "Max Verstappen", stops: [{ lap: 18, tire: "Hard" }], startTire: "Medium" },
+                            { position: 3, driver: "Charles Leclerc", stops: [{ lap: 17, tire: "Hard" }], startTire: "Medium" }
+                        ]
+                    }
+                }
+            },
+            {
+                round: 6,
+                name: "Miami Grand Prix",
+                location: "Miami",
+                circuit: "Miami International Autodrome",
+                date: "May 1-3",
+                sprint: true,
+                historical: {
+                    2023: {
+                        qualifying: [
+                            { position: 1, driver: "Sergio Perez", time: "1:27.697", team: "Red Bull" },
+                            { position: 2, driver: "Fernando Alonso", time: "1:27.796", team: "Aston Martin" },
+                            { position: 3, driver: "Charles Leclerc", time: "1:27.901", team: "Ferrari" }
+                        ],
+                        weather: { condition: "Hot & Humid", temp: "30°C", humidity: "75%" },
+                        topStrategies: [
+                            { position: 1, driver: "Sergio Perez", stops: [{ lap: 15, tire: "Hard" }], startTire: "Medium" },
+                            { position: 2, driver: "Max Verstappen", stops: [{ lap: 14, tire: "Hard" }], startTire: "Medium" },
+                            { position: 3, driver: "Fernando Alonso", stops: [{ lap: 16, tire: "Hard" }], startTire: "Medium" }
+                        ]
+                    },
+                    2024: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:27.241", team: "Red Bull" },
+                            { position: 2, driver: "Charles Leclerc", time: "1:27.389", team: "Ferrari" },
+                            { position: 3, driver: "Sergio Perez", time: "1:27.512", team: "Red Bull" }
+                        ],
+                        weather: { condition: "Sunny", temp: "31°C", humidity: "70%" },
+                        topStrategies: [
+                            { position: 1, driver: "Lando Norris", stops: [{ lap: 17, tire: "Hard" }], startTire: "Medium" },
+                            { position: 2, driver: "Max Verstappen", stops: [{ lap: 16, tire: "Hard" }], startTire: "Medium" },
+                            { position: 3, driver: "Charles Leclerc", stops: [{ lap: 18, tire: "Hard" }], startTire: "Medium" }
+                        ]
+                    },
+                    2025: {
+                        qualifying: [
+                            { position: 1, driver: "Lando Norris", time: "1:26.987", team: "McLaren" },
+                            { position: 2, driver: "Oscar Piastri", time: "1:27.124", team: "McLaren" },
+                            { position: 3, driver: "Max Verstappen", time: "1:27.256", team: "Red Bull" }
+                        ],
+                        weather: { condition: "Sunny", temp: "32°C", humidity: "72%" },
+                        topStrategies: [
+                            { position: 1, driver: "Lando Norris", stops: [{ lap: 15, tire: "Hard" }], startTire: "Medium" },
+                            { position: 2, driver: "Oscar Piastri", stops: [{ lap: 16, tire: "Hard" }], startTire: "Medium" },
+                            { position: 3, driver: "Max Verstappen", stops: [{ lap: 17, tire: "Hard" }], startTire: "Medium" }
+                        ]
+                    }
+                }
+            },
+            {
+                round: 7,
+                name: "Canadian Grand Prix",
+                location: "Montreal",
+                circuit: "Circuit Gilles Villeneuve",
+                date: "May 22-24",
+                sprint: true,
+                historical: {
+                    2023: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:21.299", team: "Red Bull" },
+                            { position: 2, driver: "Fernando Alonso", time: "1:21.518", team: "Aston Martin" },
+                            { position: 3, driver: "Lewis Hamilton", time: "1:21.642", team: "Mercedes" }
+                        ],
+                        weather: { condition: "Partly Cloudy", temp: "18°C", humidity: "60%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 21, tire: "Medium" }], startTire: "Soft" },
+                            { position: 2, driver: "Fernando Alonso", stops: [{ lap: 23, tire: "Medium" }], startTire: "Soft" },
+                            { position: 3, driver: "Lewis Hamilton", stops: [{ lap: 22, tire: "Medium" }], startTire: "Soft" }
+                        ]
+                    },
+                    2024: {
+                        qualifying: [
+                            { position: 1, driver: "George Russell", time: "1:12.000", team: "Mercedes" },
+                            { position: 2, driver: "Max Verstappen", time: "1:12.155", team: "Red Bull" },
+                            { position: 3, driver: "Lando Norris", time: "1:12.278", team: "McLaren" }
+                        ],
+                        weather: { condition: "Overcast", temp: "19°C", humidity: "65%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 24, tire: "Medium" }], startTire: "Soft" },
+                            { position: 2, driver: "Lando Norris", stops: [{ lap: 23, tire: "Medium" }], startTire: "Soft" },
+                            { position: 3, driver: "George Russell", stops: [{ lap: 25, tire: "Medium" }], startTire: "Soft" }
+                        ]
+                    },
+                    2025: {
+                        qualifying: [
+                            { position: 1, driver: "Lando Norris", time: "1:11.756", team: "McLaren" },
+                            { position: 2, driver: "Max Verstappen", time: "1:11.892", team: "Red Bull" },
+                            { position: 3, driver: "Charles Leclerc", time: "1:12.014", team: "Ferrari" }
+                        ],
+                        weather: { condition: "Sunny", temp: "21°C", humidity: "58%" },
+                        topStrategies: [
+                            { position: 1, driver: "Lando Norris", stops: [{ lap: 22, tire: "Medium" }], startTire: "Soft" },
+                            { position: 2, driver: "Max Verstappen", stops: [{ lap: 24, tire: "Medium" }], startTire: "Soft" },
+                            { position: 3, driver: "Charles Leclerc", stops: [{ lap: 23, tire: "Medium" }], startTire: "Soft" }
+                        ]
+                    }
+                }
+            },
+            {
+                round: 8,
+                name: "Monaco Grand Prix",
+                location: "Monte Carlo",
+                circuit: "Circuit de Monaco",
+                date: "June 5-7",
+                sprint: false,
+                historical: {
+                    2023: {
+                        qualifying: [
+                            { position: 1, driver: "Max Verstappen", time: "1:11.365", team: "Red Bull" },
+                            { position: 2, driver: "Fernando Alonso", time: "1:11.549", team: "Aston Martin" },
+                            { position: 3, driver: "Esteban Ocon", time: "1:11.673", team: "Alpine" }
+                        ],
+                        weather: { condition: "Sunny", temp: "24°C", humidity: "60%" },
+                        topStrategies: [
+                            { position: 1, driver: "Max Verstappen", stops: [{ lap: 29, tire: "Hard" }], startTire: "Medium" },
+                            { position: 2, driver: "Fernando Alonso", stops: [{ lap: 30, tire: "Hard" }], startTire: "Medium" },
+                            { position: 3, driver: "Esteban Ocon", stops: [{ lap: 28, tire: "Hard" }], startTire: "Medium" }
+                        ]
+                    },
+                    2024: {
+                        qualifying: [
+                            { position: 1, driver: "Charles Leclerc", time: "1:10.270", team: "Ferrari" },
+                            { position: 2, driver: "Oscar Piastri", time: "1:10.458", team: "McLaren" },
+                            { position: 3, driver: "Carlos Sainz", time: "1:10.589", team: "Ferrari" }
+                        ],
+                        weather: { condition: "Sunny", temp: "26°C", humidity: "55%" },
+                        topStrategies: [
+                            { position: 1, driver: "Charles Leclerc", stops: [{ lap: 31, tire: "Hard" }], startTire: "Medium" },
+                            { position: 2, driver: "Oscar Piastri", stops: [{ lap: 32, tire: "Hard" }], startTire: "Medium" },
+                            { position: 3, driver: "Carlos Sainz", stops: [{ lap: 30, tire: "Hard" }], startTire: "Medium" }
+                        ]
+                    },
+                    2025: {
+                        qualifying: [
+                            { position: 1, driver: "Charles Leclerc", time: "1:09.987", team: "Ferrari" },
+                            { position: 2, driver: "Lando Norris", time: "1:10.145", team: "McLaren" },
+                            { position: 3, driver: "Oscar Piastri", time: "1:10.278", team: "McLaren" }
+                        ],
+                        weather: { condition: "Partly Cloudy", temp: "25°C", humidity: "58%" },
+                        topStrategies: [
+                            { position: 1, driver: "Charles Leclerc", stops: [{ lap: 30, tire: "Hard" }], startTire: "Medium" },
+                            { position: 2, driver: "Lando Norris", stops: [{ lap: 32, tire: "Hard" }], startTire: "Medium" },
+                            { position: 3, driver: "Oscar Piastri", stops: [{ lap: 31, tire: "Hard" }], startTire: "Medium" }
+                        ]
+                    }
+                }
+            }
+        ];
+
+        // Additional races for the full 2026 calendar
+        const additionalRaces = [
+            { round: 9, name: "Spanish Grand Prix", location: "Barcelona", circuit: "Circuit de Barcelona-Catalunya", date: "June 12-14", sprint: false },
+            { round: 10, name: "Austrian Grand Prix", location: "Spielberg", circuit: "Red Bull Ring", date: "June 26-28", sprint: false },
+            { round: 11, name: "British Grand Prix", location: "Silverstone", circuit: "Silverstone Circuit", date: "July 3-5", sprint: true },
+            { round: 12, name: "Belgian Grand Prix", location: "Spa-Francorchamps", circuit: "Circuit de Spa-Francorchamps", date: "July 17-19", sprint: false },
+            { round: 13, name: "Hungarian Grand Prix", location: "Budapest", circuit: "Hungaroring", date: "July 24-26", sprint: false },
+            { round: 14, name: "Dutch Grand Prix", location: "Zandvoort", circuit: "Circuit Zandvoort", date: "August 21-23", sprint: true },
+            { round: 15, name: "Italian Grand Prix", location: "Monza", circuit: "Autodromo Nazionale di Monza", date: "September 4-6", sprint: false },
+            { round: 16, name: "Madrid Grand Prix", location: "Madrid", circuit: "Madrid Street Circuit", date: "September 11-13", sprint: false },
+            { round: 17, name: "Azerbaijan Grand Prix", location: "Baku", circuit: "Baku City Circuit", date: "September 24-26", sprint: false },
+            { round: 18, name: "Singapore Grand Prix", location: "Singapore", circuit: "Marina Bay Street Circuit", date: "October 9-11", sprint: true },
+            { round: 19, name: "United States Grand Prix", location: "Austin", circuit: "Circuit of the Americas", date: "October 23-25", sprint: false },
+            { round: 20, name: "Mexico City Grand Prix", location: "Mexico City", circuit: "Autódromo Hermanos Rodríguez", date: "October 30 - November 1", sprint: false },
+            { round: 21, name: "São Paulo Grand Prix", location: "São Paulo", circuit: "Autódromo José Carlos Pace", date: "November 6-8", sprint: false },
+            { round: 22, name: "Las Vegas Grand Prix", location: "Las Vegas", circuit: "Las Vegas Street Circuit", date: "November 20-22", sprint: false },
+            { round: 23, name: "Qatar Grand Prix", location: "Lusail", circuit: "Lusail International Circuit", date: "November 27-29", sprint: false },
+            { round: 24, name: "Abu Dhabi Grand Prix", location: "Abu Dhabi", circuit: "Yas Marina Circuit", date: "December 4-6", sprint: false }
+        ];
+
+        // Merge races with placeholder data for additional races
+        const allRaces = [...races2026, ...additionalRaces.map(race => ({
+            ...race,
+            historical: {
+                2023: { qualifying: [], weather: {}, topStrategies: [] },
+                2024: { qualifying: [], weather: {}, topStrategies: [] },
+                2025: { qualifying: [], weather: {}, topStrategies: [] }
+            }
+        }))];
+
+        const App = () => {
+            const [selectedRace, setSelectedRace] = useState(null);
+            const [selectedYear, setSelectedYear] = useState('2025');
+
+            useEffect(() => {
+                // Create speed lines
+                const speedLinesContainer = document.querySelector('.speed-lines');
+                if (speedLinesContainer) {
+                    for (let i = 0; i < 10; i++) {
+                        const line = document.createElement('div');
+                        line.className = 'speed-line';
+                        line.style.top = `${Math.random() * 100}%`;
+                        line.style.animationDelay = `${Math.random() * 2}s`;
+                        line.style.width = `${100 + Math.random() * 200}px`;
+                        speedLinesContainer.appendChild(line);
+                    }
+                }
+            }, []);
+
+            const getTireColor = (tire) => {
+                if (!tire) return '';
+                if (tire.toLowerCase().includes('soft')) return 'tire-soft';
+                if (tire.toLowerCase().includes('medium')) return 'tire-medium';
+                if (tire.toLowerCase().includes('hard')) return 'tire-hard';
+                return '';
+            };
+
+            return (
+                <>
+                    <div className="nav-bar">
+                        <div className="logo">F1 STRATEGY HUB</div>
+                        <div className="nav-stats">
+                            <div className="stat-item">
+                                <div className="stat-label">Season</div>
+                                <div className="stat-value">2026</div>
+                            </div>
+                            <div className="stat-item">
+                                <div className="stat-label">Races</div>
+                                <div className="stat-value">24</div>
+                            </div>
+                            <div className="stat-item">
+                                <div className="stat-label">Sprints</div>
+                                <div className="stat-value">6</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="hero">
+                        <div className="speed-lines"></div>
+                        <div className="hero-content">
+                            <h1>F1 STRATEGY HUB</h1>
+                            <div className="subtitle">Race Analysis Platform</div>
+                            <div className="season-badge">2026 SEASON</div>
+                        </div>
+                        <div className="scroll-indicator">
+                            <div className="scroll-text">Scroll to Explore</div>
+                            <div className="scroll-arrow"></div>
+                        </div>
+                    </div>
+
+                    <div className="container">
+                        <div className="races-grid">
+                            {allRaces.map((race) => (
+                                <div 
+                                    key={race.round} 
+                                    className="race-card"
+                                    onClick={() => setSelectedRace(race)}
+                                >
+                                    <div className="race-header">
+                                        <div className="race-number">{String(race.round).padStart(2, '0')}</div>
+                                        <div className="race-title">{race.name}</div>
+                                        <div className="race-location">{race.location}</div>
+                                        <div className="race-date">
+                                            📅 {race.date}
+                                            {race.sprint && <span className="sprint-badge">SPRINT</span>}
+                                        </div>
+                                    </div>
+                                    <div className="race-body">
+                                        <div className="data-section">
+                                            <div className="section-title">📊 Quick Stats</div>
+                                            <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>
+                                                Circuit: {race.circuit}<br/>
+                                                Historical data: 2023-2025<br/>
+                                                Click to view detailed analysis
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {selectedRace && (
+                        <div className="modal-overlay" onClick={() => setSelectedRace(null)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <button className="close-button" onClick={() => setSelectedRace(null)}>×</button>
+                                    <div className="modal-title">{selectedRace.name}</div>
+                                    <div className="race-location">{selectedRace.location} • {selectedRace.date}</div>
+                                </div>
+                                <div className="modal-body">
+                                    <div className="year-tabs">
+                                        {['2023', '2024', '2025'].map(year => (
+                                            <div 
+                                                key={year}
+                                                className={`year-tab ${selectedYear === year ? 'active' : ''}`}
+                                                onClick={() => setSelectedYear(year)}
+                                            >
+                                                {year}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {selectedRace.historical && selectedRace.historical[selectedYear] && (
+                                        <>
+                                            {selectedRace.historical[selectedYear].qualifying?.length > 0 && (
+                                                <div className="data-section">
+                                                    <div className="section-title">🏁 Qualifying Results</div>
+                                                    <div className="qualifying-table">
+                                                        {selectedRace.historical[selectedYear].qualifying.map((entry) => (
+                                                            <div key={entry.position} className="data-row">
+                                                                <div className="position">P{entry.position}</div>
+                                                                <div className="driver-name">{entry.driver}</div>
+                                                                <div className="lap-time">{entry.time}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedRace.historical[selectedYear].weather && 
+                                             Object.keys(selectedRace.historical[selectedYear].weather).length > 0 && (
+                                                <div className="data-section">
+                                                    <div className="section-title">🌤️ Weather Conditions</div>
+                                                    <div className="weather-info">
+                                                        {selectedRace.historical[selectedYear].weather.condition && (
+                                                            <div className="weather-item">
+                                                                <div className="weather-label">Condition</div>
+                                                                <div className="weather-value">
+                                                                    {selectedRace.historical[selectedYear].weather.condition}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {selectedRace.historical[selectedYear].weather.temp && (
+                                                            <div className="weather-item">
+                                                                <div className="weather-label">Temperature</div>
+                                                                <div className="weather-value">
+                                                                    {selectedRace.historical[selectedYear].weather.temp}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {selectedRace.historical[selectedYear].weather.humidity && (
+                                                            <div className="weather-item">
+                                                                <div className="weather-label">Humidity</div>
+                                                                <div className="weather-value">
+                                                                    {selectedRace.historical[selectedYear].weather.humidity}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedRace.historical[selectedYear].topStrategies?.length > 0 && (
+                                                <div className="data-section">
+                                                    <div className="section-title">🏆 Top 3 Race Strategies</div>
+                                                    {selectedRace.historical[selectedYear].topStrategies.map((strategy) => (
+                                                        <div key={strategy.position} className="pit-strategy">
+                                                            <div className="strategy-header">
+                                                                <div className="strategy-driver">{strategy.driver}</div>
+                                                                <div className="strategy-position">P{strategy.position}</div>
+                                                            </div>
+                                                            <div style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                                                                Start: <span className={getTireColor(strategy.startTire)}>{strategy.startTire}</span>
+                                                            </div>
+                                                            <div className="strategy-stops">
+                                                                {strategy.stops.map((stop, idx) => (
+                                                                    <div key={idx} className="pit-stop">
+                                                                        Lap {stop.lap}: <span className={getTireColor(stop.tire)}>{stop.tire}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {(!selectedRace.historical[selectedYear].qualifying || 
+                                              selectedRace.historical[selectedYear].qualifying.length === 0) && (
+                                                <div style={{ 
+                                                    padding: '2rem', 
+                                                    textAlign: 'center', 
+                                                    opacity: 0.6,
+                                                    fontStyle: 'italic'
+                                                }}>
+                                                    Historical data for this race will be added soon
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
